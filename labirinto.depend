@@ -1,0 +1,22 @@
+# depslib dependency file v1.0
+1593794574 source:c:\users\gusta\downloads\2020.5\programação avançada\labirinto\labirinto.cpp
+	<iostream>
+	<iomanip>
+	<fstream>
+	<cstdlib>
+	<string>
+	<time.h>
+	<cmath>
+	<list>
+	<algorithm>
+	"labirinto.h"
+
+1594097683 c:\users\gusta\downloads\2020.5\programação avançada\labirinto\labirinto.h
+	<vector>
+
+1569613642 source:c:\users\gusta\downloads\2020.5\programação avançada\labirinto\labirinto_main.cpp
+	<iostream>
+	<cmath>
+	<chrono>
+	"labirinto.h"
+
