@@ -59,16 +59,47 @@ ostream& operator<<(ostream& O, const Coord& C)
 /* ***************** */
 /* CLASSE LABIRINTO  */
 /* ***************** */
-double Noh::heuristica(const Coord &pos,const Coord &Dest) {
+double Noh::heuristica(const Coord &dest) {
 
-    return  (sqrt(2) * min((pos.lin-Dest.lin),(pos.col-Dest.lin)) + abs((pos.lin-Dest.lin) - (pos.col-Dest.lin)));
+
+
+
+    if(abs(dest.lin - pos.lin) < abs(dest.col - pos.col))
+    {
+        return (sqrt(2)*abs(dest.lin - pos.lin)+abs((dest.lin - pos.lin)-(dest.col - pos.col)));
+    }
+    else
+    {
+        return (sqrt(2)*abs(dest.col - pos.col)+abs((dest.lin - pos.lin)-(dest.col - pos.col)));
+    }
 }
 
-Noh Noh::gera_suc(const Noh &atual)
+Noh Noh::gera_suc(const Noh &atual, const Coord &dir, const Coord &dest)
 {
 
 
+    double CustoMov = 1;
+
+    if(atual.pos.lin != dir.lin && atual.pos.col != dir.col)
+    {
+        CustoMov = sqrt(2);
+    }
+
+    pos = dir;
+    parent = atual.pos;
+    custog = atual.custog + CustoMov;
+
+    custoh = heuristica(dest);
 }
+
+void Noh::copia(const Noh &N)
+{
+    pos = N.pos;
+    parent = N.parent;
+    custog = N.custog;
+    custoh = N.custoh;
+}
+
 
 
 /// Torna o mapa vazio
@@ -359,12 +390,12 @@ double Labirinto::calculaCaminho(int& NC, int& NA, int& NF)
 
     ///Criar os vectors aberto e fechado-FEITO-
 
-
+    cout << dest << endl;
 
     Noh inicial;
     inicial.pos = orig;
     inicial.parent = Coord(NULL,NULL);
-    inicial.custoh = inicial.heuristica(orig,dest);
+    inicial.custoh = inicial.heuristica(dest);
     inicial.custog = 0.0;
 
 
@@ -372,50 +403,119 @@ double Labirinto::calculaCaminho(int& NC, int& NA, int& NF)
 
     aberto.push_back(inicial);
 
+    vector<Noh>::iterator oldF;
+    vector<Noh>::iterator oldA;
+
+    Noh atual;
 
     do {
-        Noh atual;
+
         ///Adicionar qual o primeiro Noh em aberto, no atual
         atual = *aberto.begin();
         ///Apaga o noh de aberto
         aberto.erase(aberto.begin());
         ///Inseri o Noh em fechado
         fechado.push_back(atual);
-
+        cout << atual.pos<< endl;
         //Testa se essa posição não é o destino
         if(!(atual.pos==dest))
         {
             //Acessa as coordenadas vizinhas
-            for(int i=atual.pos.lin;i<atual.pos.lin;i++)
+            for(int i=(atual.pos.lin)-1;i<=(atual.pos.lin)+1;i++)
             {
-                for(int j=atual.pos.col;j<atual.pos.col;j++)
+                for(int j=(atual.pos.col)-1;j<=(atual.pos.col)+1;j++)
                 {
-                    Coord Dir;
-                    Dir.lin = i;
-                    Dir.col = j;
-
-                    if(coordValida(Dir))
+                    if(i!=atual.pos.lin || j !=atual.pos.col)
                     {
 
-                    }
 
+
+                        Coord Dir;
+                        Dir.lin = i;
+                        Dir.col = j;
+
+                        if(coordValida(Dir)) /// at(Dir) == EstadoCel::LIVRE
+                        {
+
+                            Noh suc;
+                            suc.gera_suc(atual,Dir,dest);
+
+
+                            oldF = find(fechado.begin(), fechado.end(), suc.pos);
+
+                            if(oldF != fechado.end())
+                            {
+                                if(suc < *oldF)
+                                {
+                                    fechado.erase(oldF);
+                                    oldF = find(fechado.begin(), fechado.end(), suc.pos);
+                                }
+
+
+                            }
+
+                            oldA = find(aberto.begin(), aberto.end(), suc.pos);
+
+                            if(oldA != aberto.end())
+                            {
+                                if(suc < *oldA)
+                                {
+                                    aberto.erase(oldA);
+                                    oldA = find(aberto.begin(), aberto.end(), suc.pos);
+                                }
+                            }
+
+                            if(oldA == aberto.end() && oldF == fechado.end())
+                            {
+
+                                aberto.push_back(suc);
+                                sort(aberto.begin(),aberto.end());
+                            }
+                        }
+                    }
                 }
             }
         }
+    }while(atual.pos!=dest && !(aberto.empty()));
+    cout << endl;
+    cout << atual.parent << ","<< atual.pos << " " << atual.custoh << " " <<atual.custog << endl;
+
+
+     NA = aberto.size();
+     NF = fechado.size();
+
+     double caminho_g = atual.custog;
+
+     vector<Noh>::iterator atu = find(fechado.end(), fechado.begin(), atual.parent);
+
+     cout << atual.parent << endl;
+            set(atual.parent) = EstadoCel::CAMINHO;
+            atu = find(fechado.end(), fechado.begin(), atual);
+            atual = *atu;
+            cout << atual.parent << endl;
+
+    /* if(atual.pos!=dest)
+    {
+        NC = NA = NF = -3;
+        return -2.0;
+    }
+    else
+    {
+        vector<Noh>::iterator atu = find(fechado.end(), fechado.begin(), atual.parent);
+        while(atual.parent!=orig)
+        {
+
+        }
+    }*/
+
+
+    NC = 1;
 
 
 
-
-    }while(!(inicial.pos==dest) && !(aberto.empty()));
-
-
+    imprimir();
+    return caminho_g;
 
 
-
-
-
-  // Nao hah caminho
-  NC = NA = NF = -1;
-  return -1.0;
 }
 

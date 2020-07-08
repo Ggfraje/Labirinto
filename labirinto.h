@@ -81,15 +81,25 @@ class Noh
   public:
 
       //Faz o cálculo do f total
-      inline double custof(const double g,const double h) {return g+h;}
+      inline double custof() {return custog+custoh;}
+
+      //Faz uma cópia do Noh
+      void copia(const Noh &N);
 
       //Calcula o h, Heuristica
-      double heuristica(const Coord &pos,const Coord &Dest);
+      double heuristica(const Coord &dest);
 
       // Gera os filhos do nò atual
-      Noh gera_suc(const Noh &atual);
+      Noh gera_suc(const Noh &atual, const Coord &dir, const Coord &dest);
 
       //Sobrecarga
+      inline bool operator==(const Noh& N) const {return (pos == N.pos && parent == N.parent && custog == N.custog && custoh == N.custoh);}
+      //inline bool operator==(const Coord& C) const {return pos == C;}
+      inline bool operator==(const Coord& C) const {return parent == C;}
+      inline bool operator==(const double& D)const {return custog==D;}
+      inline bool operator<( Noh &N) {return custof() < N.custof();}
+      inline bool operator=(const Noh &N) {if (this!=&N) {copia(N);}}
+
 
 
       friend class Labirinto;
